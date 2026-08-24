@@ -6,6 +6,7 @@ const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const historyRoutes = require("./routes/historyRoutes");
+const recommendationRoutes = require("./routes/recommendationRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -25,6 +26,7 @@ app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/history", historyRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
