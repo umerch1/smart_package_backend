@@ -5,11 +5,14 @@ const startOfUtcDay = (value) => {
 };
 
 const getSubscriptionStatus = (subscription, today = new Date()) => {
+  if (subscription.status === 'Inactive') return 'Inactive';
   const startDay = startOfUtcDay(subscription.startDate);
   const renewalDay = startOfUtcDay(subscription.renewalDate);
+  const expiryDay = startOfUtcDay(subscription.expiryDate);
   const todayDay = startOfUtcDay(today);
 
   if (renewalDay === null || todayDay === null) return subscription.status || 'Active';
+  if (expiryDay !== null && expiryDay < todayDay) return 'Expired';
   if (renewalDay < todayDay) return 'Expired';
   if (startDay !== null && startDay > todayDay) return 'Upcoming';
   return 'Active';

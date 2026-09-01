@@ -176,10 +176,61 @@ const deleteSubscription = async (req, res, next) => {
   }
 };
 
+const deactivateSubscription = async (req, res, next) => {
+  try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Subscription not found" });
+    }
+
+    const subscription = await Subscription.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
+      { $set: { status: "Inactive" } },
+      { new: true },
+    );
+    if (!subscription) {
+      return res.status(404).json({ success: false, message: "Subscription not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Subscription marked inactive",
+      data: { subscription: serializeSubscription(subscription) },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const reactivateSubscription = async (req, res, next) => {
+  try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Subscription not found" });
+    }
+
+    const subscription = await Subscription.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!subscription) {
+      return res.status(404).json({ success: false, message: "Subscription not found" });
+    }
+
+    subscription.status = getSubscriptionStatus({ ...subscription.toObject(), status: undefined });
+    await subscription.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Subscription reactivated",
+      data: { subscription: serializeSubscription(subscription) },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   createSubscription,
   getSubscriptions,
   getSubscription,
   updateSubscription,
   deleteSubscription,
+  deactivateSubscription,
+  reactivateSubscription,
 };
