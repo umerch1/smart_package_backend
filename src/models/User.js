@@ -2,12 +2,24 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    firstName: {
       type: String,
-      required: [true, 'Name is required'],
+      required: [true, 'First name is required'],
       trim: true,
-      minlength: [2, 'Name must be at least 2 characters'],
-      maxlength: [100, 'Name must be 100 characters or fewer']
+      minlength: [2, 'First name must be at least 2 characters'],
+      maxlength: [50, 'First name must be 50 characters or fewer']
+    },
+    lastName: {
+      type: String,
+      required: [true, 'Last name is required'],
+      trim: true,
+      minlength: [2, 'Last name must be at least 2 characters'],
+      maxlength: [50, 'Last name must be 50 characters or fewer']
+    },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female'],
+      required: [true, 'Gender is required']
     },
     email: {
       type: String,
