@@ -17,7 +17,8 @@ const subscriptionSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Category is required'],
-      enum: ['Entertainment', 'Bills', 'Health', 'Education', 'Finance', 'Mobile Package', 'Streaming', 'Gym', 'Utility', 'Software', 'Other']
+      trim: true,
+      maxlength: [80, 'Category must be 80 characters or fewer']
     },
     startDate: {
       type: Date,
@@ -46,7 +47,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Active', 'Upcoming', 'Expired'],
+      enum: ['Active', 'Upcoming', 'Expired', 'Inactive'],
       default: 'Active'
     }
   },
