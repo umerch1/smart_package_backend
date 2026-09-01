@@ -4,7 +4,7 @@ const { getSubscriptionStatus } = require('../utils/subscriptionStatus');
 const getDashboard = async (req, res, next) => {
   try {
     const subscriptions = await Subscription.find({ userId: req.user._id })
-      .select('renewalDate status')
+      .select('startDate renewalDate status')
       .lean();
     const counts = subscriptions.reduce((result, subscription) => {
       result[getSubscriptionStatus(subscription)] += 1;
