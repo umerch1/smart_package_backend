@@ -1,89 +1,113 @@
 # SmartSub Backend
 
-Phase 1 backend for the Smart Package and Subscription Reminder App.
+SmartSub is a Node.js and Express API for managing subscriptions, renewal notifications, subscription and payment history, and simple usage-based recommendations. MongoDB stores users and subscription-related records. JWT protects user data, and bcrypt hashes passwords.
 
-## Stack
+## Installation
 
-- Node.js and Express.js
-- MongoDB Local with Mongoose
-- JWT authentication
-- bcrypt password hashing
-- dotenv and CORS
+Requirements:
 
-## Setup
+- Node.js 18 or newer
+- MongoDB running locally
 
-1. Ensure MongoDB is running locally.
-2. From this directory, install dependencies:
+Install dependencies from this directory:
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-3. Confirm `.env` contains:
+## MongoDB Setup
 
-   ```env
-   PORT=5000
-   MONGODB_URI=mongodb://127.0.0.1:27017/smartsub
-   JWT_SECRET=your_secret_key
-   ```
+Start the local MongoDB service, then create a `.env` file in this directory. MongoDB creates the `smartsub` database when the first record is saved.
 
-4. Start the API:
+## Environment Variables
 
-   ```bash
-   npm start
-   ```
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/smartsub
+JWT_SECRET=replace_with_a_long_random_secret
+```
 
-The server listens on `http://localhost:5000`.
+`.env` is excluded from Git. Never commit the JWT secret.
 
-## Endpoints
+## Folder Structure
 
-### Health check
+```text
+src/
+   app.js
+   config/db.js
+   controllers/       Request handlers
+   middleware/        JWT and error middleware
+   models/            Mongoose schemas
+   routes/            Express route definitions
+   services/          Notification and recommendation logic
+server.js            Environment loading and server startup
+```
 
-`GET /api/health`
+## API Endpoints
 
-### Register
+All protected endpoints require:
 
-`POST /api/auth/register`
+```text
+Authorization: Bearer <jwt>
+```
+
+| Area | Method | Endpoint | Protected |
+| --- | --- | --- | --- |
+| Health | GET | `/api/health` | No |
+| Authentication | POST | `/api/auth/register` | No |
+| Authentication | POST | `/api/auth/login` | No |
+| Authentication | POST | `/api/auth/logout` | Yes |
+| User | GET | `/api/users/profile` | Yes |
+| Subscriptions | POST | `/api/subscriptions` | Yes |
+| Subscriptions | GET | `/api/subscriptions` | Yes |
+| Subscriptions | GET | `/api/subscriptions/:id` | Yes |
+| Subscriptions | PUT | `/api/subscriptions/:id` | Yes |
+| Subscriptions | DELETE | `/api/subscriptions/:id` | Yes |
+| Dashboard | GET | `/api/dashboard` | Yes |
+| Notifications | GET | `/api/notifications` | Yes |
+| Notifications | PATCH | `/api/notifications/:id/read` | Yes |
+| History | GET | `/api/history/subscriptions` | Yes |
+| History | GET | `/api/history/payments` | Yes |
+| Recommendations | GET | `/api/recommendations` | Yes |
+
+Subscription creation accepts `packageName`, `category`, `price`, `renewalDate`, optional `expiryDate` and `usagePattern`, and optional `status`. Recommendation messages are generated from the authenticated user’s stored subscriptions. A subscription marked `Rarely Used` receives a low-usage recommendation, an expired subscription receives a status recommendation, and a subscription renewing within seven days receives a renewal recommendation.
+
+## Authentication and Data Ownership
+
+Register and login return a JWT. The JWT middleware verifies the token, loads the user, and attaches that user to the request. Every protected query includes the authenticated user’s `userId`, preventing access to another user’s subscriptions, notifications, history, dashboard data, or recommendations.
+
+Responses use this format:
 
 ```json
 {
-  "name": "Umer",
-  "email": "umer@example.com",
-  "password": "password123"
+   "success": true,
+   "message": "...",
+   "data": {}
 }
 ```
 
-Registration validates the fields, normalizes the email, checks duplicates, hashes the password with bcrypt, stores the user, and returns a user summary plus JWT.
+Errors use `{ "success": false, "message": "..." }`. Validation, invalid authentication, missing resources, duplicate accounts, and unexpected server errors are handled centrally.
 
-### Login
+## Running the Backend
 
-`POST /api/auth/login`
-
-```json
-{
-  "email": "umer@example.com",
-  "password": "password123"
-}
+```bash
+npm start
 ```
 
-Login loads the password explicitly because the User model excludes it by default, compares it with bcrypt, and returns a JWT with password-free user information.
+For automatic restarts during development:
 
-### Profile
+```bash
+npm run dev
+```
 
-`GET /api/users/profile`
+The API runs at `http://localhost:5000` unless `PORT` changes it.
 
-Send `Authorization: Bearer <token>`. The JWT middleware verifies the token, loads the user, and exposes only the authenticated user to the controller.
+## Connecting React Native Expo
 
-### Logout
+Set the Expo app's API base URL to the machine running this backend:
 
-`POST /api/auth/logout`
+- Android emulator: `http://10.0.2.2:5000`
+- iOS simulator: `http://localhost:5000`
+- Physical device: `http://<computer-lan-ip>:5000`
 
-Logout is stateless in this phase. The Expo client should remove its stored JWT after receiving the success response. Future phases can add token revocation if server-side session invalidation is needed.
-
-## Response format
-
-Success responses use `{ "success": true, "message": "...", "data": {} }`. Errors use `{ "success": false, "message": "..." }`.
-
-Passwords are never selected from normal user queries and are explicitly omitted from every API response.
-
-This phase intentionally does not include subscriptions, notifications, dashboard, payment history, or recommendations.
+Send the JWT returned by login in the `Authorization` header for protected requests. Ensure the phone and computer share the same network and that the backend port is reachable through the local firewall.

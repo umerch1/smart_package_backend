@@ -17,12 +17,16 @@ const subscriptionSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Category is required'],
-      enum: ['Mobile Package', 'Streaming', 'Gym', 'Utility', 'Software', 'Other']
+      trim: true,
+      maxlength: [80, 'Category must be 80 characters or fewer']
     },
-    price: {
+    startDate: {
+      type: Date,
+      required: [true, 'Start date is required']
+    },
+    amount: {
       type: Number,
-      required: [true, 'Price is required'],
-      min: [0, 'Price cannot be negative']
+      min: [0, 'Amount cannot be negative']
     },
     renewalDate: {
       type: Date,
@@ -31,6 +35,11 @@ const subscriptionSchema = new mongoose.Schema(
     expiryDate: {
       type: Date
     },
+    notes: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Notes must be 500 characters or fewer']
+    },
     usagePattern: {
       type: String,
       trim: true,
@@ -38,7 +47,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Active', 'Upcoming', 'Expired'],
+      enum: ['Active', 'Upcoming', 'Expired', 'Inactive'],
       default: 'Active'
     }
   },

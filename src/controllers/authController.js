@@ -4,22 +4,30 @@ const generateToken = require('../utils/generateToken');
 
 const userResponse = (user) => ({
   id: user._id,
-  name: user.name,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  gender: user.gender,
   email: user.email
 });
 
 const register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password, gender } = req.body;
 
-    if (typeof name !== 'string' || name.trim().length < 2) {
-      return res.status(400).json({ success: false, message: 'Name must be at least 2 characters' });
+    if (typeof firstName !== 'string' || firstName.trim().length < 2) {
+      return res.status(400).json({ success: false, message: 'First name must be at least 2 characters' });
+    }
+    if (typeof lastName !== 'string' || lastName.trim().length < 2) {
+      return res.status(400).json({ success: false, message: 'Last name must be at least 2 characters' });
+    }
+    if (!gender || !['Male', 'Female'].includes(gender)) {
+      return res.status(400).json({ success: false, message: 'Gender must be Male or Female' });
     }
     if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       return res.status(400).json({ success: false, message: 'Please provide a valid email' });
     }
-    if (typeof password !== 'string' || password.length < 6) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    if (typeof password !== 'string' || password.length < 6 || password.length > 8) {
+      return res.status(400).json({ success: false, message: 'Password must be between 6-8 characters' });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -29,7 +37,13 @@ const register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user = await User.create({ name: name.trim(), email: normalizedEmail, password: hashedPassword });
+    const user = await User.create({ 
+      firstName: firstName.trim(), 
+      lastName: lastName.trim(), 
+      email: normalizedEmail, 
+      password: hashedPassword,
+      gender
+    });
 
     return res.status(201).json({
       success: true,

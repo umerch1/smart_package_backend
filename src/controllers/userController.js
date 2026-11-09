@@ -4,7 +4,9 @@ const getProfile = (req, res) => {
     message: 'Profile retrieved successfully',
     data: {
       id: req.user._id,
-      name: req.user.name,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      gender: req.user.gender,
       email: req.user.email
     }
   });
